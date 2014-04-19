@@ -29,7 +29,9 @@ class Ec2(object):
     
     def connect_to_region(self, region):
         if not self.region_connected(region):
-            conn = boto.ec2.connect_to_region(region, aws_access_key_id=self.access_key, aws_secret_access_key = self.secret_key)
+            conn = boto.ec2.connect_to_region(region, 
+                    aws_access_key_id=self.access_key, 
+                    aws_secret_access_key = self.secret_key)
             self.connection_pool.append([region, conn])
     
     def update_instances_from_connection(self, connection):
@@ -37,12 +39,10 @@ class Ec2(object):
         for r in reservations:
             instances = r.instances
             for i in instances:
-                #print "Found instance: {}".format(i)
                 self.instances.append(i)
     
     def update_all_instances(self):
         for region, conn in self.connection_pool:
-            #print "Fetching reservations from region: {}".format(region)
             self.update_instances_from_connection(conn)
 
     

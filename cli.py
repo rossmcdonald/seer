@@ -4,7 +4,8 @@ from cmd import Cmd
 from ConfigParser import ConfigParser
 from shlex import split
 from sys import exit
-from aws import Aws
+from aws import aws
+import re
 
 class Shell(Cmd, object):
     config = None
@@ -12,7 +13,7 @@ class Shell(Cmd, object):
     def __init__(self):
         super(Shell, self).__init__()
         self.load_credentials()
-        self.aws_context = Aws(self.config.get('aws', 'access_key'), self.config.get('aws', 'secret_key'))
+        self.aws_context = aws.Aws(self.config.get('aws', 'access_key'), self.config.get('aws', 'secret_key'))
         self.intro = "Welcome to Seer. Type `help` to get started."
         self.prompt = "(seer) "
     
@@ -26,7 +27,31 @@ class Shell(Cmd, object):
         pass
     
     def do_list(self, params):
-        self.aws_context.print_active_instances()
+        reg = None
+        if len(params) != 0:
+            exp = ''
+            for i in params:
+                exp += ' '.join(str(i))
+            try:
+                reg = re.compile(exp)
+            except re.error:
+                print 'Invalid regex expression [%s].\n' % exp
+                reg = None
+        for i, instance in self.aws_context.get_instances():
+            details = '%s | %s | %s | %s | %s' % (i,
+                                                instance.id, 
+                                                instance.public_dns_name, 
+                                                instance.instance_type,
+                                                instance.key_name)
+            if reg == None:
+                print details
+            else:
+                try:
+                    for s in split(details):
+                        if reg.match(s):
+                            print details
+                except re.error:
+                    pass
     
     def do_quit(self, params):
         exit("Exiting...")
