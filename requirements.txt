@@ -1,0 +1,5 @@
+boto==2.25.0
+cement==2.2.0
+cmd2==0.6.7
+pyparsing==2.0.1
+wsgiref==0.1.2
